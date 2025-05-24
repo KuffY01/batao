@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Love's Grievance Portal</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome, My Aloo ki bori! ❤</h1>
+        <p>This is your special space to express anything that's on your mind. I'm here to listen.</p>
+
+        <form id="grievanceForm">
+            <label for="grievanceTitle">Subject:</label>
+            <input type="text" id="grievanceTitle" placeholder="e.g., 'Not enough cuddles'" required>
+
+            <label for="grievanceText">Your Grievance:</label>
+            <textarea id="grievanceText" rows="5" placeholder="Tell me what's bothering you..." required></textarea>
+
+            <button type="submit">Submit Grievance</button>
+        </form>
+
+        <hr>
+
+        <h2>Your Past Grievances:</h2>
+        <div id="grievancesList">
+            <p class="no-grievances-message">No grievances submitted yet. Everything is perfect! 😉</p>
+        </div>
+    </div>
+
+    <script>
+    const grievanceForm = document.getElementById('grievanceForm');
+    const grievancesList = document.getElementById('grievancesList');
+    const noGrievancesMessage = document.querySelector('.no-grievances-message');
+
+    let grievances = JSON.parse(localStorage.getItem('myLoveGrievances')) || [];
+
+    // *** IMPORTANT: REPLACE THIS WITH YOUR DEPLOYED WEB APP URL ***
+    const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxfUZ07y_dvOGOUv64UB3ZxkkiRDccpqOaa6OF2WeqEnmk1ua0HkE0VhoGA5vfRQ3oY/exec';
+
+    function renderGrievances() {
+        grievancesList.innerHTML = ''; // Clear existing list
+        if (grievances.length === 0) {
+            grievancesList.appendChild(noGrievancesMessage);
+            noGrievancesMessage.style.display = 'block';
+            return;
+        } else {
+            noGrievancesMessage.style.display = 'none';
+        }
+
+        // Always display newest at the top
+        const sortedGrievances = [...grievances].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+        sortedGrievances.forEach((grievance, displayIndex) => { // Use displayIndex for rendering order
+            const grievanceItem = document.createElement('div');
+            grievanceItem.classList.add('grievance-item');
+            if (grievance.resolved) {
+                grievanceItem.classList.add('resolved'); // Apply 'resolved' class if marked
+            }
+            grievanceItem.innerHTML = `
+                <h3>${grievance.title}</h3>
+                <p>${grievance.text}</p>
+                <small>Submitted on: ${new Date(grievance.timestamp).toLocaleString()}</small>
+                ${grievance.resolved ? '<span class="status-resolved">Resolved</span>' : '<button class="resolve-btn" data-timestamp="${grievance.timestamp}">Mark as Resolved</button>'}
+                <button class="delete-btn" data-timestamp="${grievance.timestamp}">Delete</button>
+            `;
+            grievancesList.appendChild(grievanceItem);
+        });
+
+        // Add event listeners for resolve and delete buttons
+        document.querySelectorAll('.resolve-btn').forEach(button => {
+            button.addEventListener('click', (event) => {
+                const timestampToFind = event.target.dataset.timestamp;
+                const originalIndex = grievances.findIndex(g => g.timestamp === timestampToFind);
+                if (originalIndex !== -1) {
+                    markGrievanceResolved(originalIndex);
+                }
+            });
+        });
+
+        document.querySelectorAll('.delete-btn').forEach(button => {
+            button.addEventListener('click', (event) => {
+                const timestampToFind = event.target.dataset.timestamp;
+                const originalIndex = grievances.findIndex(g => g.timestamp === timestampToFind);
+                if (originalIndex !== -1) {
+                    deleteGrievance(originalIndex);
+                } else {
+                    console.error("Could not find the grievance to delete in the original array.");
+                }
+            });
+        });
+    }
+
+    function markGrievanceResolved(index) {
+        if (index >= 0 && index < grievances.length) {
+            grievances[index].resolved = true;
+            saveAndRender();
+            alert('Grievance marked as resolved (locally).');
+        }
+    }
+
+    function deleteGrievance(index) {
+        if (confirm("Are you sure you want to delete this grievance?")) {
+            if (index >= 0 && index < grievances.length) {
+                grievances.splice(index, 1);
+                saveAndRender();
+            } else {
+                console.error("Invalid index for deletion:", index);
+            }
+        }
+    }
+
+    function saveAndRender() {
+        localStorage.setItem('myLoveGrievances', JSON.stringify(grievances));
+        renderGrievances();
+    }
+
+    grievanceForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const title = document.getElementById('grievanceTitle').value;
+        const text = document.getElementById('grievanceText').value;
+
+        // Basic validation
+        if (!title.trim() || !text.trim()) {
+            alert('Please fill in both the subject and grievance details.');
+            return;
+        }
+
+        const newGrievance = {
+            title: title,
+            text: text,
+            timestamp: new Date().toISOString(), // Use ISO string for consistent comparison
+            resolved: false
+        };
+
+        // Add to local storage immediately for quick UI update
+        grievances.push(newGrievance);
+        saveAndRender();
+        grievanceForm.reset(); // Clear the form
+
+        // Send data to Google Apps Script
+        try {
+            const response = await fetch(APPS_SCRIPT_WEB_APP_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(newGrievance)
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                console.log('Apps Script response:', result.message);
+                // Optional: show a small success message after the backend confirms
+            } else {
+                // If response.ok is false, it means an HTTP error (4xx, 5xx)
+                console.error('Error sending grievance to Apps Script. Status:', response.status, 'Status Text:', response.statusText);
+                const errorText = await response.text(); // Get more details if available
+                console.error('Response body:', errorText);
+                alert('Grievance saved locally, but failed to notify via email/sheet. Check the browser console (F12) for specific errors.');
+            }
+        } catch (error) {
+            // This catches network errors or issues before the response is received
+            console.error('Network or other error', error);
+            alert('Grievance saved locally, but failed to notify via email/sheet due to a network error. Check the browser console (F12) for specific errors.');
+        }
+    });
+
+    // Initial render when the page loads
+    renderGrievances();
+</script>
+</body>
+</html>

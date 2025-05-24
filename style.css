@@ -1,0 +1,162 @@
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #fce4ec; /* Light pink background */
+    color: #4a4a4a;
+    line-height: 1.6;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* Align to the top */
+    min-height: 100vh;
+}
+
+.container {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    max-width: 700px;
+    width: 100%;
+}
+
+h1 {
+    color: #d81b60; /* Deep pink */
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+p {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+label {
+    font-weight: bold;
+    color: #880e4f; /* Darker pink */
+}
+
+input[type="text"],
+textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ff80ab; /* Medium pink border */
+    border-radius: 5px;
+    box-sizing: border-box; /* Include padding in width */
+    font-size: 1rem;
+    color: #333;
+}
+
+input[type="text"]:focus,
+textarea:focus {
+    outline: none;
+    border-color: #d81b60; /* Highlight on focus */
+    box-shadow: 0 0 5px rgba(216, 27, 96, 0.3);
+}
+
+button[type="submit"] {
+    background-color: #e91e63; /* Main button color */
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+button[type="submit"]:hover {
+    background-color: #d81b60; /* Darker on hover */
+}
+
+hr {
+    border: 0;
+    height: 1px;
+    background-image: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(216, 27, 96, 0.75), rgba(0, 0, 0, 0));
+    margin: 40px 0;
+}
+
+h2 {
+    color: #d81b60;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+#grievancesList {
+    display: flex;
+    flex-direction: column-reverse; /* Display newest at the top */
+    gap: 20px;
+}
+
+.grievance-item {
+    background-color: #ffebee; /* Lighter pink for items */
+    border: 1px solid #ffcdd2; /* Even lighter pink border */
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    position: relative;
+}
+
+.grievance-item h3 {
+    color: #880e4f;
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+.grievance-item p {
+    margin-bottom: 10px;
+    text-align: left;
+    color: #555;
+}
+
+.grievance-item small {
+    display: block;
+    text-align: right;
+    color: #999;
+    font-size: 0.8em;
+    margin-top: 10px;
+}
+
+.grievance-item button {
+    margin-top: 10px;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background-color 0.2s ease;
+}
+
+.resolve-btn {
+    background-color: #4CAF50; /* Green */
+    color: white;
+    margin-right: 10px;
+}
+
+.resolve-btn:hover {
+    background-color: #45a049;
+}
+
+.delete-btn {
+    background-color: #f44336; /* Red */
+    color: white;
+}
+
+.delete-btn:hover {
+    background-color: #da190b;
+}
+
+.no-grievances-message {
+    color: #999;
+    font-style: italic;
+    padding: 20px;
+    text-align: center;
+}
